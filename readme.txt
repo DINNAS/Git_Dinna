@@ -5,3 +5,4 @@ Git is free software.
 3 git tracks changes
 4 git changes back
 5 stupid boss prefers SVN 
+6 create a new branch is quick 
