@@ -6,4 +6,8 @@ Git is free software.
 4 git changes back
 5 stupid boss prefers SVN 
 6 create a new branch is quick 
-7 creating a new branch is quick & simple
+<<<<<<< HEAD
+7 creating a new branch is quick and simple
+=======
+7 creating a new branch is quick AND simple 
+>>>>>>> feature1
