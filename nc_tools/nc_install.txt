@@ -1,0 +1,8 @@
+# Removes the old package
+yum erase nc
+
+# Manually downloads the working package from the Official Repository
+wget http://vault.centos.org/6.6/os/x86_64/Packages/nc-1.84-22.el6.x86_64.rpm
+
+# Installs the package
+rpm -iUv nc-1.84-22.el6.x86_64.rpm
