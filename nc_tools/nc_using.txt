@@ -1,0 +1,38 @@
+常见使用
+
+1 远程拷贝文件
+
+server 1 : 10.0.0.1
+server 2 : 10.0.0.2
+
+server 1 —> server 2
+
+server 2 :  nc -l 1234  > install.log
+server 1 : nc  -w | 10.0.0.2 1234 < install.log
+
+2  克隆硬盘或 分区
+
+3 端口扫描
+
+nc -v -w | 10.0.0.2 -z  1— 1000
+
+4 储存 web 页面
+
+while true ; do nc -l -p 80 -q  < URL.html ; done
+
+5 传输 目录
+
+server 2 :  nc -l 1234 | tar vxzf -
+server 1 : tar cvzf - directory name | nc 10.0.0.2 1234
+
+参数简介：
+  -l : 监听模式， 用于入站连接
+ -n: 指定数字的IP地址， 不能用hostname
+ -o: file 记录16 进制的传输
+ -p: port 本地端口号
+ -s: addr 本地源地址
+ -u: UDP 模式
+ -v : 详细输出
+ -w : set timeout 的时间
+
+
