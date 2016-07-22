@@ -1,0 +1,108 @@
+--- 
+
+### This main.yml help you deploy jboss to remote node 
+##
+- name: create base directory jboss
+  file: path=/jboss state=directory mode=0755 owner=jboss group=jboss
+
+#- name: create remote user for jboss
+#  shell: groupadd -g 501 jboss && useradd -u 501 -g jboss jboss
+#  register: mode_jboss
+#  ignore_errors: True
+
+- name: copy LuaJIT-2.0.3 to remote node
+  copy: src=LuaJIT-2.0.3.tar.gz 
+        dest=/usr/local/src/LuaJIT-2.0.3.tar.gz 
+        owner=root group=root mode=0644 
+
+- name: unarchive LuaJIT-2.0.3.tar.gz 
+  unarchive: >
+        src=/usr/local/src/LuaJIT-2.0.3.tar.gz
+        dest=/usr/local copy=no
+        owner=root group=root mode=0755
+        creates=/usr/local/LuaJIT-2.0.3 
+  
+- name: install LuaJIT-2.0.3 
+  shell: chdir=/usr/local/LuaJIT-2.0.3  
+         make && make install 
+  
+- name: export LuaJIT-2.0.3 install path  
+  shell: > 
+         export LUAJIT_LIB=/usr/local/lib && 
+         export LUAJIT_INC=/usr/local/include/luajit-2.0
+
+- name: copy ngx_devel_kit-0.2.19.tar.gz to remote node 
+  copy: src=ngx_devel_kit-0.2.19.tar.gz 
+        dest=/usr/local/src/ngx_devel_kit-0.2.19.tar.gz 
+        owner=root group=root mode=0644 
+
+- name: unarchive ngx_devel_kit-0.2.19.tar.gz
+  unarchive: >
+        src=/usr/local/src/ngx_devel_kit-0.2.19.tar.gz
+        dest=/usr/local copy=no
+        owner=root group=root mode=0755 
+        creates=creates=/usr/local/ngx_devel_kit-0.2.19
+
+- name: copy v0.9.6 to remote node 
+  copy: src=v0.9.6 dest=/usr/local/src/v0.9.6 mode=0644 
+
+- name: unarchive v0.9.6 
+  unarchive: >
+        src=/usr/local/src/v0.9.6 
+        dest=/usr/local copy=no
+        owner=root group=root mode=0755
+        creates=/usr/local/lua-nginx-module-0.9.6
+
+- name: copy pcre-8.12.tar.gz to remote node 
+  copy: src=pcre-8.12.tar.gz 
+        dest=/usr/local/src/pcre-8.12.tar.gz mode=0644 
+
+- name: unarchive pcre-8.12
+  unarchive: >
+        src=/usr/local/src/pcre-8.12.tar.gz
+        dest=/usr/local copy=no
+        owner=root group=root mode=0755 
+        creates=/usr/local/pcre-8.12
+
+- name: copy  nginx-1.4.7.tar.gz to remote node 
+  copy: src=nginx-1.4.7.tar.gz  
+        dest=/usr/local/src/nginx-1.4.7.tar.gz mode=0644 
+
+- name: unarchive nginx-1.4.7.tar.gz 
+  unarchive: >
+        src=/usr/local/src/nginx-1.4.7.tar.gz
+        dest=/usr/local copy=no
+        owner=root group=root mode=0755
+        creates=/usr/local/nginx-1.4.7
+
+- name: make install nginx 
+  shell: > 
+         chdir=/usr/local/nginx-1.4.7 
+         ./configure --user=jboss --group=jboss 
+         --prefix=/jboss/nginx-1.4.7 
+         --with-http_stub_status_module 
+         --with-http_ssl_module 
+         --with-pcre=/usr/local/pcre-8.12/ 
+         --add-module=/usr/local/ngx_devel_kit-0.2.19 
+         --add-module=/usr/local/lua-nginx-module-0.9.6 
+         --with-ld-opt="-Wl,-rpath,$LUAJIT_LIB" && 
+         make && make install
+
+- name: create module softlink 
+  file: src=/usr/local/lib/libluajit-5.1.so.2.0.3 
+        dest=/lib64/libluajit-5.1.so.2 state=link 
+
+- name: copy waf conf to nginx configure path 
+  copy: src=waf.tgz dest=/jboss/nginx-1.4.7/conf/waf.tgz 
+
+- name: unarchive waf.tgz
+  unarchive: >
+        src=/jboss/nginx-1.4.7/conf/waf.tgz 
+        dest=/jboss/nginx-1.4.7/conf
+        copy=no owner=root group=root
+        creates=/jboss/nginx-1.4.7/conf/waf
+
+- name: make nginx can mannul by jboss
+  shell: chown -R  jboss.jboss /jboss/nginx-1.4.7 && 
+         cd /jboss/nginx-1.4.7/sbin && 
+         chown root.jboss nginx && chmod u+s nginx

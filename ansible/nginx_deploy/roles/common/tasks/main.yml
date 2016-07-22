@@ -1,0 +1,16 @@
+---
+
+### open the soft hand hard limits 
+- name: /etc/security/limits.conf 
+  copy: src=limits.conf dest=/etc/security/limits.conf owner=root group=root mode=0644 backup=yes 
+
+- name: /etc/sysctl.conf 
+  copy: src=sysctl.conf dest=/etc/sysctl.conf owner=root group=root mode=0644 backup=yes 
+  notify: reload sysctl
+
+- name: Copy the EPEL repository definition
+  copy: src=epel.repo dest=/etc/yum.repos.d/epel_ansible.repo
+
+- name: Create the GPG key for EPEL
+  copy: src=RPM-GPG-KEY-EPEL-6 dest=/etc/pki/rpm-gpg
+ 

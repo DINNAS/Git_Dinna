@@ -1,0 +1,8 @@
+--- 
+
+- name: this playbook help you deploy nginx 
+  remote_user: root
+  hosts: nginx 
+  roles:
+  - common 
+  - nginx 
