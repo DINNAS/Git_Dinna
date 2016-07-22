@@ -1,0 +1,54 @@
+---
+
+### This main.yml help you deploy jboss to remote node 
+#
+- name: create remote user jboss's group
+  group: name=jboss gid=501 state=present 
+
+- name: create remote user jboss
+  user: name=jboss uid=501 state=present password=co-jboss
+ 
+- name: create base directory jboss
+  file: path=/jboss state=directory mode=0755 owner=jboss group=jboss
+
+- name: copy jdk pkg to the remote node
+  copy: src=jdk1.6.0_45.tar.gz dest=/jboss/jdk1.6.0_45.tar.gz owner=jboss group=jboss mode=0644
+
+- name: unarchive the jdk pkg
+  unarchive: >
+        src=/jboss/jdk1.6.0_45.tar.gz
+        dest=/jboss copy=no 
+        owner=jboss group=jboss mode=0755 
+        creates=/jboss/jdk1.6.0_45
+
+- name: add jdk environment to .bash_profile 
+  lineinfile: "dest=/home/jboss/.bash_profile state=present regexp='export\ PATH' insertafter='export PATH' 
+         line='export JAVA_HOME=/jboss/jdk1.6.0_45 \n 
+               export PATH=$JAVA_HOME/bin:$JAVA_HOME/jre/bin:$PATH \n 
+               export JBOSS_HOME=/jboss/jboss-eap-5.1/jboss-as \n 
+               export CLASSPATH=.$CLASSPATH:$JAVA_HOME/lib:$JAVA_HOME/jre/lib:$JAVA_HOME/lib/tools.jar \n
+               export PATH=$PATH:$JBOSS_HOME/bin '"
+
+- name: reload jdk env and jboss env 
+  shell: . /home/jboss/.bash_profile 
+
+- name: copy jboss-eap.5.1 to remote node 
+  copy: src=jboss-eap-5.1.tar.gz dest=/jboss/jboss-eap-5.1.tar.gz owner=jboss group=jboss mode=0644 
+
+- name: unarchive jboss-eap-5.1.tar.gz 
+  unarchive: >
+        src=/jboss/jboss-eap-5.1.tar.gz
+        dest=/jboss copy=no
+        owner=jboss group=jboss mode=0755
+        creates=/jboss/jboss-eap-5.1 
+
+- name: modified the loging file 
+  template: src=jboss-log4j.xml.j2 dest=/jboss/jboss-eap-5.1/jboss-as/server/web/conf/jboss-log4j.xml
+
+- name: modified the port config file
+  template: src=bindings-jboss-beans.xml.j2 
+        dest=/jboss/jboss-eap-5.1/jboss-as/server/web/conf/bindingservice.beans/META-INF/bindings-jboss-beans.xml
+
+- name: copy start script to dest node
+  copy: src=jboss.sh dest=/home/jboss/jboss.sh
+        owner=jboss group=jboss mode=0755

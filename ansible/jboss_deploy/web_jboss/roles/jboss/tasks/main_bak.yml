@@ -1,0 +1,35 @@
+---
+
+### This main.yml help you deploy jboss to remote node 
+#
+- name: create remote user for jboss 
+  shell: groupadd -g 501 jboss && useradd -u 501 -g jboss jboss 
+  register: mode_jboss
+  ignore_errors: True
+
+- name: create base directory jboss
+  file: path=/jboss state=directory mode=0755 owner=jboss group=jboss
+
+- name: copy jdk pkg to the remote node
+  copy: src=jdk1.6.0_45.tar.gz dest=/jboss/jdk1.6.0_45.tar.gz owner=jboss group=jboss mode=0644
+
+- name: unpack the jdk and add its directory to the env.
+  command: chdir=/jboss /bin/tar xzf jdk1.6.0_45.tar.gz  creates=/jboss/jdk1.6.0_45
+  command: chdir=/jboss /bin/chown jboss.jboss jdk1.6.0_45 -R 
+
+- name: add jdk environment to .bash_profile 
+  shell: echo "export JAVA_HOME=/jboss/jdk1.6.0_45" >> ~/.bash_profile && 
+         echo "export PATH=\$JAVA_HOME/bin:\$JAVA_HOME/jre/bin:$PATH" >> ~/.bash_profile && 
+         echo "export CLASSPATH=.\$CLASSPATH:\$JAVA_HOME/lib:\$JAVA_HOME/jre/lib:\$JAVA_HOME/lib/tools.jar" >> ~/.bash_profile && 
+         echo "export JBOSS_HOME=/jboss/jboss-eap-5.1/jboss-as" >> ~/.bash_profile && 
+         echo "export PATH=\$PATH:\$JBOSS_HOME/bin" >> ~/.bash_profile && source  ~/.bash_profile
+
+- name: copy jboss-eap.5.1 to remote node 
+  copy: src=jboss-eap-5.1.tar.gz dest=/jboss/jboss-eap-5.1.tar.gz owner=jboss group=jboss mode=0644 
+
+- name: unpack the jboss-eap-5.1 
+  command: chdir=/jboss /bin/tar xzf jboss-eap-5.1.tar.gz creates=jboss-eap-5.1 
+
+- name: modified the loging file 
+  template: src=jboss-log4j.xml.j2 dest=/jboss/jboss-eap-5.1/jboss-as/server/web/conf/jboss-log4j.xml
+

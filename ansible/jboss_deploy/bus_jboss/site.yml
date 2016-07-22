@@ -1,0 +1,9 @@
+---
+
+####  This playbook deploy bus application to remote node 
+
+- name: deploy jboss bus 
+  hosts: bus
+  remote_user: root 
+  roles:
+  - bus

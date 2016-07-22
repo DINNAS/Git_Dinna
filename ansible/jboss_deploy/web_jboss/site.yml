@@ -1,0 +1,10 @@
+---
+
+###  THis playbook deploy jboss application to dest node.
+
+- name: deploy jboss 
+  remote_user: root 
+  hosts: jboss
+  roles:
+  - jboss
+
